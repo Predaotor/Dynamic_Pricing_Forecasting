@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pandas
+numpy
+scikit-learn
+prophet
+lightgbm
+sqlalchemy
+psycopg2
+alembic
+python-multipart
+pydantic
+joblib
+python-dotenv
+requests
