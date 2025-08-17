@@ -6,6 +6,12 @@ from datetime import datetime
 class RawSales(Base):
     """
     Staging table for raw sales data uploads. Stores the original row as JSON, plus metadata.
+    Fields:
+        - raw_id: BigInteger primary key
+        - uploaded_at: Timestamp of upload
+        - source: Source identifier (client, file, etc.)
+        - raw_json: Original row as JSON
+        - status: ETL status (pending, processed, error)
     """
     __tablename__ = "raw_sales"
     raw_id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -17,6 +23,14 @@ class RawSales(Base):
 class SalesDaily(Base):
     """
     Standardized daily sales data after ETL from RawSales.
+    Fields:
+        - id: BigInteger primary key
+        - product_id: UUID foreign key to products
+        - date: Date of sale
+        - units_sold: Number of units sold
+        - price: Sale price per unit
+        - revenue: Total revenue
+        - created_at: Timestamp of creation
     """
     __tablename__ = "sales_daily"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -30,6 +44,12 @@ class SalesDaily(Base):
 class Cost(Base):
     """
     Daily unit cost for each product.
+    Fields:
+        - id: BigInteger primary key
+        - product_id: UUID foreign key to products
+        - date: Date of cost
+        - unit_cost: Cost per unit
+        - created_at: Timestamp of creation
     """
     __tablename__ = "costs"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
