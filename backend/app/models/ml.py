@@ -3,6 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.core.db import Base
 from datetime import datetime
 import uuid
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class ModelRun(Base):
     """
@@ -20,8 +22,12 @@ class ModelRun(Base):
     model_name = Column(String, nullable=False)
     model_version = Column(String, nullable=False)
     params = Column(JSON, nullable=True)
-    started_at = Column(DateTime, default=datetime.now, nullable=False)
+    started_at = Column(DateTime, server_default=func.now(), nullable=False)
     finished_at = Column(DateTime, nullable=True)
+
+    forecasts = relationship("Forecast", back_populates="model_run", cascade="all, delete-orphan")
+    elasticity_estimates = relationship("ElasticityEstimate", back_populates="model_run", cascade="all, delete-orphan")
+    price_recommendations = relationship("PriceRecommendation", back_populates="model_run", cascade="all, delete-orphan")
 
 class Forecast(Base):
     """
@@ -40,7 +46,10 @@ class Forecast(Base):
     model_run_id = Column(UUID(as_uuid=True), ForeignKey("model_runs.id"), nullable=False)
     target_date = Column(Date, nullable=False)
     predicted_units = Column(Numeric, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    product = relationship("Product", back_populates="forecasts")
+    model_run = relationship("ModelRun", back_populates="forecasts")
 
 class ElasticityEstimate(Base):
     """
@@ -63,7 +72,10 @@ class ElasticityEstimate(Base):
     window_end = Column(Date, nullable=False)
     elasticity = Column(Numeric, nullable=False)
     r2 = Column(Numeric, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    product = relationship("Product", back_populates="elasticity_estimates")
+    model_run = relationship("ModelRun", back_populates="elasticity_estimates")
 
 class PriceRecommendation(Base):
     """
@@ -90,4 +102,7 @@ class PriceRecommendation(Base):
     expected_units = Column(Numeric, nullable=False)
     expected_revenue = Column(Numeric, nullable=False)
     expected_profit = Column(Numeric, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    product = relationship("Product", back_populates="price_recommendations")
+    model_run = relationship("ModelRun", back_populates="price_recommendations")

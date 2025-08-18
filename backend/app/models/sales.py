@@ -2,6 +2,8 @@ from sqlalchemy import Column, Date, Integer, Numeric, DateTime, ForeignKey, Big
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.db import Base
 from datetime import datetime
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class RawSales(Base):
     """
@@ -15,7 +17,7 @@ class RawSales(Base):
     """
     __tablename__ = "raw_sales"
     raw_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    uploaded_at = Column(DateTime, default=datetime.now, nullable=False)
+    uploaded_at = Column(DateTime, server_default=func.now(), nullable=False)
     source = Column(String, nullable=True)
     raw_json = Column(JSON, nullable=False)
     status = Column(String, default="pending", nullable=False)
@@ -39,7 +41,9 @@ class SalesDaily(Base):
     units_sold = Column(Integer, nullable=False)
     price = Column(Numeric, nullable=False)
     revenue = Column(Numeric, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    product = relationship("Product", back_populates="sales")
 
 class Cost(Base):
     """
@@ -56,4 +60,6 @@ class Cost(Base):
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     date = Column(Date, nullable=False)
     unit_cost = Column(Numeric, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    product = relationship("Product", back_populates="costs")

@@ -3,6 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from app.core.db import Base
 from datetime import datetime
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class Product(Base):
     """
@@ -21,4 +23,10 @@ class Product(Base):
     sku = Column(String, nullable=False)
     name = Column(String, nullable=False)
     currency = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    sales = relationship("SalesDaily", back_populates="product", cascade="all, delete-orphan")
+    costs = relationship("Cost", back_populates="product", cascade="all, delete-orphan")
+    forecasts = relationship("Forecast", back_populates="product", cascade="all, delete-orphan")
+    elasticity_estimates = relationship("ElasticityEstimate", back_populates="product", cascade="all, delete-orphan")
+    price_recommendations = relationship("PriceRecommendation", back_populates="product", cascade="all, delete-orphan")
