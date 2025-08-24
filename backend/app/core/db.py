@@ -37,6 +37,7 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 
 # Dependency
+
 def get_db():
     db = SessionLocal()
     try:
