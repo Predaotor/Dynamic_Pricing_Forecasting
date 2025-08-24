@@ -23,7 +23,7 @@ class Product(Base):
     sku = Column(String, nullable=False)
     name = Column(String, nullable=False)
     currency = Column(String, nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     sales = relationship("SalesDaily", back_populates="product", cascade="all, delete-orphan")
     costs = relationship("Cost", back_populates="product", cascade="all, delete-orphan")

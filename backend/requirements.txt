@@ -13,3 +13,6 @@ pydantic
 joblib
 python-dotenv
 requests
+pytest 
+pytest-asyncio
+asyncpg

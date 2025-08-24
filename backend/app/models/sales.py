@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Integer, Numeric, DateTime, ForeignKey, BigInteger, String, JSON
+from sqlalchemy import Column, Date, Integer, Numeric, DateTime, ForeignKey, BigInteger, String, JSON, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.db import Base
 from datetime import datetime
@@ -14,6 +14,7 @@ class RawSales(Base):
         - source: Source identifier (client, file, etc.)
         - raw_json: Original row as JSON
         - status: ETL status (pending, processed, error)
+        - error_message: Optional error text when processing fails
     """
     __tablename__ = "raw_sales"
     raw_id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -21,6 +22,7 @@ class RawSales(Base):
     source = Column(String, nullable=True)
     raw_json = Column(JSON, nullable=False)
     status = Column(String, default="pending", nullable=False)
+    error_message = Column(String, nullable=True)
 
 class SalesDaily(Base):
     """
@@ -35,6 +37,9 @@ class SalesDaily(Base):
         - created_at: Timestamp of creation
     """
     __tablename__ = "sales_daily"
+    __table_args__ = (
+        UniqueConstraint("product_id", "date", name="uq_sales_product_date"),
+    )
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     date = Column(Date, nullable=False)
