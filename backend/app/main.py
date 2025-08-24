@@ -7,7 +7,7 @@ import app.models  # ensure models are registered
 from app.routers.health import router as health_router
 from app.routers.products import router as products_router
 from app.routers.sales import router as sales_router
-#from app.routers.ml import router as ml_router
+from app.routers.ml import router as ml_router
 
 
 @asynccontextmanager
@@ -29,8 +29,8 @@ app.add_middleware(
 )
 
 # Routers
-app.include_router(health_router, prefix="/health")
-app.include_router(products_router, prefix="/products")
-app.include_router(sales_router, prefix="/sales")
-#app.include_router(ml_router, prefix="")
+app.include_router(health_router, prefix="")
+app.include_router(products_router, prefix="")
+app.include_router(sales_router, prefix="")
+app.include_router(ml_router, prefix="")
 
