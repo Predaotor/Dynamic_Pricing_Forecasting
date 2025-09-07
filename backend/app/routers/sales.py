@@ -22,18 +22,18 @@ def upload_raw_sales(rows: list[dict] = Body(...), source: str = "api", db: Sess
 
 @router.post("/run_etl")
 def run_etl_endpoint(background_tasks: BackgroundTasks):
-    async def _runner():
     # Coerce sync URL to asyncpg
-      url = DATABASE_URL.set(drivername="postgresql+asyncpg")
-      engine = create_async_engine(url, future=True, echo=False)
-      AsyncLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    url = DATABASE_URL.set(drivername="postgresql+asyncpg")
+    engine = create_async_engine(url, future=True, echo=False)
+    AsyncLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
-      async def _runner():
+    async def _runner():
         async with AsyncLocal() as session:
             await run_etl(session)
-        await engine.dispose()
-
-    background_tasks.add_task(lambda: asyncio.run(_runner()))
+        await engine.dispose()    
+        
+    # Run clen runner in background
+    background_tasks.add_task(lambda: asyncio.run(runner()))
     return {"status": "ETL started in background"}
 
 @router.post("etl/status")

@@ -88,8 +88,12 @@ async def run_etl(session: AsyncSession, batch_size: int = 500):
     3. Load → ensure products exist, then upsert sales
     4. Update RawSales status (processed/failed + error message)
     """
+    total_processed = 0
+    total_failed = 0
+    batch_number = 0
 
     while True:
+        batch_number += 1
         # 1) Extract with SKIP LOCKED to avoid duplicate work if multiple workers
         result = await session.execute(
             select(RawSales)
@@ -102,6 +106,11 @@ async def run_etl(session: AsyncSession, batch_size: int = 500):
         if not raw_rows:
             logger.info("No more raw sales to process.")
             break
+        
+        logger.info(f"Processing batch {batch_number} with {len(raw_rows)} rows")
+        
+        batch_processed = 0
+        batch_failed = 0
 
         for raw in raw_rows:
             try:
@@ -165,6 +174,10 @@ async def run_etl(session: AsyncSession, batch_size: int = 500):
                     .where(RawSales.raw_id == raw.raw_id)
                     .values(status="processed", error_message=None)
                 )
+                batch_processed += 1
+                total_processed += 1
+                
+                logger.debug(f"Processed row_id={raw.raw_id}, product={sales_row.product_id}, date={sales_row.date}, units_sold={sales_row.units_sold}, price={sales_row.price}, revenue={sales_row.revenue}")
 
             except ValidationError as e:
                 logger.error(f"Validation failed for raw_id={raw.raw_id}: {e}")
@@ -184,5 +197,9 @@ async def run_etl(session: AsyncSession, batch_size: int = 500):
 
         # Commit after each batch
         await session.commit()
+        
+        logger.info(f"📊 Batch {batch_number} done → Processed={batch_processed}, Failed={batch_failed}")
+        logger.info(f"⚡ Total so far → Processed={total_processed}, Failed={total_failed}")
 
-    logger.info("ETL pipeline completed.")
+    logger.info(f"\n🎉 ETL pipeline completed → Total processed={total_processed}, failed={total_failed}")
+
