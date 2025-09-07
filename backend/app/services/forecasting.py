@@ -112,9 +112,18 @@ async def run_forecast(
     # Engineer features
     df_features = engineer_features(df)
     
+    import logging
+
     for col in df_features.columns:
         if col not in ['date', "units_sold"]:
-            df_features[col]=pd.to_numeric(df_features[col], errors="coerce")
+            original_nonnull = df_features[col].notnull().sum()
+            df_features[col] = pd.to_numeric(df_features[col], errors="coerce")
+            coerced_nans = df_features[col].isna().sum() - (df_features[col].shape[0] - original_nonnull)
+            if coerced_nans > 0:
+                logging.warning(
+                    f"Column '{col}' had {coerced_nans} values coerced to NaN during numeric conversion. "
+                    "Check for unexpected data types or values."
+                )
     
     if len(df_features) < min_data_days:
         raise ValueError(f"Insufficient data after feature engineering: {len(df_features)} rows")
